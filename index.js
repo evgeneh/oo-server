@@ -31,15 +31,7 @@ app.use(
 )
 
 app.use(bodyParser.json())
-/*
-app.use('/api', (req, res, next) => {
-    res.header('Access-Control-Allow-Origin','*')
-    res.header('X-Requested-Width','XMLHttpRequest')
-    res.header('Access-Control-Allow-Methods','GET,PUT,POST,DELETE,OPTIONS,HEAD,PATCH')
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Access-Control-AllowHeaders, Authorization, X-Requested-Width')
-    next()
-})
- */
+
 
 app.use('/uploads', express.static(__dirname + '/uploads'))
 
