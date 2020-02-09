@@ -49,7 +49,6 @@ router.post('/auth/register', (req, res) => {
                 }
                 else {
                     Counters.findOneAndUpdate( { id: 'user_id'}, { $inc: {seq: 1} },{upsert: true, "new": true, setDefaultsOnInsert: true},  (err, newId) => {
-                     //if (err) res.send({resultCode: 1})}   ).then ( (newId) => {
                         let  id = Number(newId.seq)
                         Profile.create({
                             id,
@@ -65,12 +64,6 @@ router.post('/auth/register', (req, res) => {
 
                                 res.send({resultCode: 0})
                              })
-                            /*
-                            .catch(err => {
-                                messages.push(err._message + ' :create err')
-                                resultCode = 1
-                                res.send({resultCode, messages})
-                             })*/
                     })
 
                 }
@@ -161,9 +154,5 @@ router.get("/auth/me", (req, res) => {
 
 })
 
-router.get("/test", (req, res) => {
-    res.send(req.session)
-   // res.send({lol: 'sdfsdf'})
-})
 
 module.exports = router
