@@ -30,12 +30,12 @@ const contactsValidate = (contacts) => {
 router.get("/profile/:id", (req, res) => {
     Profile.findOne({id: req.params.id})
         .then((profile) => {
-            let {_id, password, email, login, uniqueUrlName, status, createdAt, updatedAt, __v, following, photos, ...newProfile} = profile._doc
+            let {_id, password, email, login, uniqueUrlName, status, createdAt, updatedAt, __v, following, photos, id, ...newProfile} = profile._doc
             Object.keys(initContacts).map((contact) => {
                 if (! newProfile.contacts[contact])
                     newProfile.contacts[contact] = null;
             })
-            res.send( { ...newProfile, photos: {large: photos.large, small: photos.small}})
+            res.send( { ...newProfile, userId: id, photos: {large: photos.large, small: photos.small}})
     })
 })
 

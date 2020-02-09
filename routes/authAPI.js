@@ -138,7 +138,6 @@ router.delete('/auth/login', (req, res) => {
 
 
 router.get("/auth/me", (req, res) => {
-    console.log("auth try")
     if (!!req.session && !!req.session.userId)
     {
         let {userLogin, userId} = req.session //sessionLocal
