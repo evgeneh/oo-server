@@ -80,6 +80,17 @@ const UploadUpdateResize = (req, res, cb) => {
 }
 
 
+const updateProfileImage =  (id, large, small, cb) => {
+    const profile = Profile.findOneAndUpdate({id: id}, {
+        photos: { large: config.FILE_STORAGE + large, small: config.FILE_STORAGE + small }
+    }, {new: true}, (err, profile) => {
+        if (err) {
+            return cb("UPDATE PROFILE ERROR") }
+        else return cb(null, profile.photos);
+    })
+
+}
+
 router.put("/profile/photo", (req, res) => { //для множества файлов писать upload.array возвр. req.files
     UploadUpdateResize(req, res, (err, req, res) => {
         if (err)
@@ -95,12 +106,13 @@ router.put("/profile/photo", (req, res) => { //для множества фай�
                 if (err) {
                     res.send({resultCode: 1, messages: ["UPDATE PROFILE ERROR"]})
                 } else {
-                    res.json({resultCode: 0, photos: profile.photos})
+                    res.send({resultCode: 0, photos: profile.photos})
                 }
             })
         }
     })
 })
+
 
 router.put("/photo", (req, res) => {
     UploadUpdateResize(req, res, (err, req) => {
@@ -110,6 +122,30 @@ router.put("/photo", (req, res) => {
             res.json({resultCode: 0})
         }
     })
+})
+
+//put photo id to set it like profile image
+router.put("/photo/profile", (req, res) => {
+    if (!req.session.userId)
+        res.send({resultCode: 1, messages: ["UNREGISTERED_USER"]})
+    else if (! req.query.id)
+        res.send({resultCode: 1, messages: ["NO USER ID"]})
+    else {
+        Upload.findById({_id: req.query.id}).then( (upload) => {
+
+            if (upload.owner !== req.session.userId)
+                res.send({resultCode: 1, messages: ["ACCESS ERROR"]})
+            else {
+                updateProfileImage(req.session.userId, upload.path,  upload.preview,(err, prof) => {
+                    if (err) res.send({resultCode: 1, messages: ["UPDATE PROFILE ERROR"]})
+                    else {
+                        setTimeout(() => res.send({resultCode: 0, photos: prof.photos}), 2000)
+
+                    }
+                })
+            }
+        })
+    }
 })
 
 
@@ -140,6 +176,37 @@ router.get("/photos", (req, res) => {
                 })
         }).catch( (err) => console.log("PHOTOS SEND ERROR: " + err)
         )
+    }
+})
+
+const fs = require('fs')
+
+router.delete('/photo', (req, res) => {
+    if (!req.session.userId)
+        res.send({resultCode: 1, messages: ["UNREGISTERED_USER"]})
+    else if (! req.query.id)
+        res.send({resultCode: 1, messages: ["NO USER ID"]})
+    else {
+        let messages = []
+        Upload.findById({_id: req.query.id}).then( (upload) => {
+
+            fs.unlink(upload.path, err => {
+                if (err) messages.push("FILE DELETE ERROR")
+
+                fs.unlink(upload.preview, err_small => {
+                    if (err_small) messages.push("FILE DELETE ERROR MINIATURE")
+                    Upload.deleteOne({_id: req.query.id}, (err) => {
+                        if (err) {
+                             messages.push("UPLOAD RECORD REMOVE ERROR");
+                             res.send({resultCode: 1, messages});
+                        }
+                        else {
+                            res.send({resultCode: 0})
+                        }
+                    })
+                })
+            })
+        })
     }
 })
 
