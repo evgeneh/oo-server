@@ -12,6 +12,18 @@ id: Number,
     photos: {small: String, large: String}
     */
 
+router.get("/follow/:id", (req, res) => {
+    if (!req.session.userId || (req.session.userId) == req.params.id) {
+        res.send({isFollow: false })
+    }
+    else {
+            Profile.findOne({id: req.session.userId}).then(profile => {
+                const followList = profile.following;
+                let isFollow = followList.indexOf(req.params.id) != -1;
+                res.send({isFollow })
+            })
+    }
+})
 router.post("/follow/:id", (req, res) => followToggle(req, res, true))
 router.delete("/follow/:id", (req, res) => followToggle(req, res, false))
 

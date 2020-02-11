@@ -46,10 +46,10 @@ router.post("/profile", (req, res) =>{
 
 
 router.put("/profile/", (req, res) => {
-    let {id, photos, ...profile} = req.body
+    let {userId, photos, ...profile} = req.body
 
     //login test
-    if (req.session.userId && req.session.userLogin && (req.session.userId === id)) {
+    if (req.session.userId && req.session.userLogin && (req.session.userId === userId)) {
 
         let messages = contactsValidate(profile.contacts)
 
