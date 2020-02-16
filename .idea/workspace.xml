@@ -3,8 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="1579f87b-f23e-4575-adc7-33e22c85608d" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/profileAPI.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/profileAPI.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/userAPI.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/userAPI.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.js" beforeDir="false" afterPath="$PROJECT_DIR$/config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/mediaAPI.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/mediaAPI.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -30,7 +31,7 @@
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="D:/workspace/ts/editor" />
+    <property name="last_opened_file_path" value="D:/workspace/upload-space" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -144,7 +145,15 @@
       <workItem from="1581289246456" duration="1449000" />
       <workItem from="1581361259053" duration="984000" />
       <workItem from="1581364139329" duration="2189000" />
-      <workItem from="1581445789284" duration="3022000" />
+      <workItem from="1581445789284" duration="3945000" />
+      <workItem from="1581538646893" duration="641000" />
+      <workItem from="1581625089206" duration="3515000" />
+      <workItem from="1581687181590" duration="8094000" />
+      <workItem from="1581708420423" duration="8327000" />
+      <workItem from="1581764114955" duration="1458000" />
+      <workItem from="1581781065925" duration="2402000" />
+      <workItem from="1581852181252" duration="9359000" />
+      <workItem from="1581878618614" duration="9996000" />
     </task>
     <servers />
   </component>
