@@ -41,6 +41,7 @@ app.use('/api', require('./routes/profileAPI'))
 app.use('/api', require('./routes/userAPI'))
 app.use('/api', require('./routes/authAPI'))
 app.use('/api', require('./routes/mediaAPI'))
+app.use('/api', require('./routes/wallAPI'))
 
 
 app.listen(config.PORT, ()=>{

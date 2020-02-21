@@ -8,7 +8,7 @@ const uploadSchema = new Schema({
   }  ,
   path: {
       type: String,
-      requied: true
+      required: true
   },
   preview: {type: String}
 },

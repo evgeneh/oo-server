@@ -21,7 +21,6 @@ const updateProfileImage =  (id, large, small, cb) => {
 
 router.put("/profile/photo", (req, res) => { //для множества файлов писать upload.array возвр. req.files
     UploadUpdateResize(req, res).then( (upload) => {
-        console.log(upload)
         if (upload.err)
             res.send({resultCode: 1, messages: [upload.err]})
         else {
@@ -56,7 +55,7 @@ router.put("/photo", (req, res) => {
 //put photo id to set it like profile image
 router.put("/photo/profile", (req, res) => {
     if (!req.session.userId)
-        res.send({resultCode: 1, messages: ["UNREGISTERED_USER"]})
+        res.send({resultCode: 1, messages: ["Not authorized"]})
     else if (! req.query.id)
         res.send({resultCode: 1, messages: ["NO USER ID"]})
     else {

@@ -2,10 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="1579f87b-f23e-4575-adc7-33e22c85608d" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/models/wall.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/wallpost.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/wallAPI.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.js" beforeDir="false" afterPath="$PROJECT_DIR$/config.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/upload.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/upload.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/mediaAPI.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/mediaAPI.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/userAPI.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/userAPI.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -31,7 +35,7 @@
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="D:/workspace/upload-space" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/models" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -40,13 +44,14 @@
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\evgen\Documents\js\server1\models" />
-      <recent name="C:\Users\evgen\Documents\js\server1" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\evgen\Documents\js\server1\routes" />
       <recent name="C:\Users\evgen\Documents\js\server1\uploads" />
+      <recent name="C:\Users\evgen\Documents\js\server1\models" />
+      <recent name="C:\Users\evgen\Documents\js\server1" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\270120\server1_270120\server1\models" />
       <recent name="C:\Users\evgen\Documents\js\server1\models" />
       <recent name="C:\Users\evgen\Documents\js\server1" />
     </key>
@@ -153,7 +158,13 @@
       <workItem from="1581764114955" duration="1458000" />
       <workItem from="1581781065925" duration="2402000" />
       <workItem from="1581852181252" duration="9359000" />
-      <workItem from="1581878618614" duration="9996000" />
+      <workItem from="1581878618614" duration="11583000" />
+      <workItem from="1581951700210" duration="127000" />
+      <workItem from="1581968097018" duration="623000" />
+      <workItem from="1582049947213" duration="1750000" />
+      <workItem from="1582146279775" duration="1495000" />
+      <workItem from="1582198971027" duration="1240000" />
+      <workItem from="1582279467038" duration="23759000" />
     </task>
     <servers />
   </component>

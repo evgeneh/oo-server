@@ -3,14 +3,6 @@ const router = express.Router()
 const Profile = require('../models/profile')
 
 //ДЛЯ ЗАПРОСА МАССИВА ЮЗЕРС
-/*
-id: Number,
-    name: String,
-    status: String,
-    followed: Boolean,
-    uniqueUrlName: String,
-    photos: {small: String, large: String}
-    */
 
 router.get("/follow/:id", (req, res) => {
     if (!req.session.userId || (req.session.userId) == req.params.id) {
