@@ -47,11 +47,11 @@ const addNewWallPost = async (myId, userId, text) => {
 
 router.get("/wall/:id", async (req, res) => {
     console.log( req.params.id)
-    const wall = await Wall.findOne({userId: req.params.id}).populate('posts').populate('owner').exec();
+    const wall = await Wall.findOne({userId: req.params.id}).populate('posts').populate('posts.owner').exec();
     if (wall) {
 
         console.log(wall)
-        res.send({resultCode: 0, totalCount: 0})
+        res.send({resultCode: 0, totalCount: wall.posts.length, })
     }
     else {
         res.send({resultCode: 0, totalCount: 0})
