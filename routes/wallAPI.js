@@ -45,24 +45,36 @@ const addNewWallPost = async (myId, userId, text) => {
     return postRes;
 }
 
-router.get("/wall/:id", async (req, res) => {
-    console.log( req.params.id)
-    const wall = await Wall.findOne({userId: req.params.id}).populate('posts').populate('posts.owner').exec();
+//read a user's wall with all posts
+router.get("/wall", async (req, res) => {
+    console.log(req.params.id)
+    const wall = await Wall.findOne({userId: req.query.id})
+        .populate([{path: 'posts', model: 'wallPost', populate: {path: 'owner', model: 'profile'}}]).exec();
     if (wall) {
 
-        console.log(wall)
-        res.send({resultCode: 0, totalCount: wall.posts.length, })
-    }
-    else {
-        res.send({resultCode: 0, totalCount: 0})
-    }
-} )
+        let posts = wall.posts.map((single) => {
+            return {
+                postId: single._id,
+                date: single.updatedAt,
+                text: single.text,
+                owner: profileToPostOwner(single.owner)
+            }
+        })
 
-router.post("/wall", async (req, res) => { /*
+        const data = {userId: wall.userId, totalCount: wall.posts.length, posts}
+
+        res.send({resultCode: 0, data})
+    } else {
+        res.send({resultCode: 1})
+    }
+})
+
+//add a new post for wall owner
+router.post("/wall", async (req, res) => {
     if (req.session.userId === undefined)
-        return res.json({message: 'Not authorized'});*/
+        return res.json({message: 'Not authorized'});
 
-    let myId = 1 //req.session.userId
+    let myId = req.session.userId
     let {userId, text} = req.body //id of wall owner
 
     try {
@@ -74,8 +86,7 @@ router.post("/wall", async (req, res) => { /*
 
         let newPost = await addNewWallPost(myId, userId, text)
         res.send({resultCode: 0, post: newPost})
-    }
-    catch(err) {
+    } catch (err) {
         console.log(err)
         res.send({resultCode: 1, message: "Wall update error"})
     }
