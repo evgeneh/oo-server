@@ -30,7 +30,7 @@ const profileToPostOwner = ({id, photos, fullName}) => {
 const addNewWallPost = async (myId, userId, text) => {
     //get mongo _id for post creator
     let profile = await Profile.findOne({id: myId}).exec();
-    console.log(myId)
+
     let post = new WallPostSchema({
         _id: new mongoose.Types.ObjectId(),
         owner: profile._id,

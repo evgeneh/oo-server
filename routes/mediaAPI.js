@@ -91,13 +91,13 @@ router.get("/photos", (req, res) => {
                 Upload.find({owner: currentId}, (err, uploads) => {
 
                     let items = uploads.map((upload) => {
-                        const address = upload.path;
-                        const previewAddress = upload.preview;
+                        const description = (upload.description === undefined ) ? "" : upload.description
                         return {
                             id: upload._id.toString(),
-                            path: address,
-                            preview: previewAddress,
-                            date: upload.createdAt
+                            path: upload.path,
+                            preview: upload.preview,
+                            date: upload.createdAt,
+                            description
                         }
                     })
                     res.send({items: items, totalCount: uploads.length})
@@ -116,7 +116,7 @@ router.delete('/photo', async (req, res) => {
         res.send({resultCode: 1, messages: ["NO USER ID"]})
     else {
         let messages = []
-        const upload = Upload.findById(req.query.id)
+        const upload = await Upload.findById(req.query.id).exec()
 
         try {
             fs.unlinkSync(upload.path)
@@ -125,8 +125,8 @@ router.delete('/photo', async (req, res) => {
             console.log("unlink error :" + e)
         }
         try {
-            await Upload.deleteOne({_id: req.query.id})
-
+            await Upload.deleteOne({_id: req.query.id}).exec()
+            console.log("upload was deleted")
             res.send({resultCode: 0})
         } catch (e) {
             messages.push("UPLOAD RECORD REMOVE ERROR");
@@ -134,5 +134,26 @@ router.delete('/photo', async (req, res) => {
         }
     }
 })
+
+router.post('/photo/update', async (req, res) => {
+
+    if (req.session.userId === undefined || !req.session.userId)
+        res.send({resultCode: 1, messages: ["UNREGISTERED_USER"]})
+    let {id, description} = req.body;
+    try {
+        let upload = await Upload.findOne({_id: id}).exec()
+        //changes allowed fow upload owners only
+        if (upload.owner === req.session.userId) {
+            await Upload.findOneAndUpdate({_id: upload._id}, {description: description})
+            res.send({resultCode: 0})
+        } else
+            res.send({resultCode: 1, messages: ["ACCESS_ERROR"]})
+
+    } catch (e) {
+        console.log('Update description error: ' + e)
+        res.send({resultCode: 1, messages: ["UPDATE_UPLOADS_ERROR"]})
+    }
+})
+
 
 module.exports = router

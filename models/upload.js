@@ -4,13 +4,15 @@ const Schema = mongoose.Schema
 const uploadSchema = new Schema({
   owner: {
       type: Number,
-      ref: 'Profile'
+      ref: 'profile'
   }  ,
   path: {
       type: String,
       required: true
   },
-  preview: {type: String}
+  preview: {type: String},
+
+  description: {type: String}
 },
 {
     timestamps: true
