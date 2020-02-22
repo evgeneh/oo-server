@@ -47,9 +47,16 @@ const addNewWallPost = async (myId, userId, text) => {
 
 //read a user's wall with all posts
 router.get("/wall", async (req, res) => {
-    console.log(req.params.id)
-    const wall = await Wall.findOne({userId: req.query.id})
+    let wall = null;
+    try
+    {
+     wall = await Wall.findOne({userId: req.query.id})
         .populate([{path: 'posts', model: 'wallPost', populate: {path: 'owner', model: 'profile'}}]).exec();
+    }
+    catch (e) {
+        return res.json({message: 'Get Wall error'});
+    }
+
     if (wall) {
 
         let posts = wall.posts.map((single) => {
@@ -65,7 +72,7 @@ router.get("/wall", async (req, res) => {
 
         res.send({resultCode: 0, data})
     } else {
-        res.send({resultCode: 1})
+        res.send({resultCode: 0, data: {totalCount: 0, userId : req.query.id, posts: []}})
     }
 })
 
