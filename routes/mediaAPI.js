@@ -109,32 +109,29 @@ router.get("/photos", (req, res) => {
 
 const fs = require('fs')
 
-router.delete('/photo', (req, res) => {
-    if (!req.session.userId)
+router.delete('/photo', async (req, res) => {
+    if (req.session.userId === undefined || !req.session.userId)
         res.send({resultCode: 1, messages: ["UNREGISTERED_USER"]})
     else if (! req.query.id)
         res.send({resultCode: 1, messages: ["NO USER ID"]})
     else {
         let messages = []
-        Upload.findById({_id: req.query.id}).then( (upload) => {
+        const upload = Upload.findById(req.query.id)
 
-            fs.unlink(upload.path, err => {
-                if (err) messages.push("FILE DELETE ERROR")
+        try {
+            fs.unlinkSync(upload.path)
+            fs.unlinkSync(upload.preview)
+        } catch (e) {
+            console.log("unlink error :" + e)
+        }
+        try {
+            await Upload.deleteOne({_id: req.query.id})
 
-                fs.unlink(upload.preview, err_small => {
-                    if (err_small) messages.push("FILE DELETE ERROR MINIATURE")
-                    Upload.deleteOne({_id: req.query.id}, (err) => {
-                        if (err) {
-                             messages.push("UPLOAD RECORD REMOVE ERROR");
-                             res.send({resultCode: 1, messages});
-                        }
-                        else {
-                            res.send({resultCode: 0})
-                        }
-                    })
-                })
-            })
-        })
+            res.send({resultCode: 0})
+        } catch (e) {
+            messages.push("UPLOAD RECORD REMOVE ERROR");
+            res.send({resultCode: 1, messages});
+        }
     }
 })
 
