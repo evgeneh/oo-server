@@ -91,13 +91,13 @@ router.get("/photos", (req, res) => {
                 Upload.find({owner: currentId}, (err, uploads) => {
 
                     let items = uploads.map((upload) => {
-                        const address = upload.path;
-                        const previewAddress = upload.preview;
+                        const description = (upload.description === undefined ) ? "" : upload.description
                         return {
                             id: upload._id.toString(),
-                            path: address,
-                            preview: previewAddress,
-                            date: upload.createdAt
+                            path: upload.path,
+                            preview: upload.preview,
+                            date: upload.createdAt,
+                            description
                         }
                     })
                     res.send({items: items, totalCount: uploads.length})
@@ -109,33 +109,51 @@ router.get("/photos", (req, res) => {
 
 const fs = require('fs')
 
-router.delete('/photo', (req, res) => {
-    if (!req.session.userId)
+router.delete('/photo', async (req, res) => {
+    if (req.session.userId === undefined || !req.session.userId)
         res.send({resultCode: 1, messages: ["UNREGISTERED_USER"]})
     else if (! req.query.id)
         res.send({resultCode: 1, messages: ["NO USER ID"]})
     else {
         let messages = []
-        Upload.findById({_id: req.query.id}).then( (upload) => {
+        const upload = await Upload.findById(req.query.id).exec()
 
-            fs.unlink(upload.path, err => {
-                if (err) messages.push("FILE DELETE ERROR")
-
-                fs.unlink(upload.preview, err_small => {
-                    if (err_small) messages.push("FILE DELETE ERROR MINIATURE")
-                    Upload.deleteOne({_id: req.query.id}, (err) => {
-                        if (err) {
-                             messages.push("UPLOAD RECORD REMOVE ERROR");
-                             res.send({resultCode: 1, messages});
-                        }
-                        else {
-                            res.send({resultCode: 0})
-                        }
-                    })
-                })
-            })
-        })
+        try {
+            fs.unlinkSync(upload.path)
+            fs.unlinkSync(upload.preview)
+        } catch (e) {
+            console.log("unlink error :" + e)
+        }
+        try {
+            await Upload.deleteOne({_id: req.query.id}).exec()
+            console.log("upload was deleted")
+            res.send({resultCode: 0})
+        } catch (e) {
+            messages.push("UPLOAD RECORD REMOVE ERROR");
+            res.send({resultCode: 1, messages});
+        }
     }
 })
+
+router.post('/photo/update', async (req, res) => {
+
+    if (req.session.userId === undefined || !req.session.userId)
+        res.send({resultCode: 1, messages: ["UNREGISTERED_USER"]})
+    let {id, description} = req.body;
+    try {
+        let upload = await Upload.findOne({_id: id}).exec()
+        //changes allowed fow upload owners only
+        if (upload.owner === req.session.userId) {
+            await Upload.findOneAndUpdate({_id: upload._id}, {description: description})
+            res.send({resultCode: 0})
+        } else
+            res.send({resultCode: 1, messages: ["ACCESS_ERROR"]})
+
+    } catch (e) {
+        console.log('Update description error: ' + e)
+        res.send({resultCode: 1, messages: ["UPDATE_UPLOADS_ERROR"]})
+    }
+})
+
 
 module.exports = router
