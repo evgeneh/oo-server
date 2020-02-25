@@ -42,7 +42,7 @@ app.use('/api', require('./routes/userAPI'))
 app.use('/api', require('./routes/authAPI'))
 app.use('/api', require('./routes/mediaAPI'))
 app.use('/api', require('./routes/wallAPI'))
-
+app.use('/api', require('./routes/dialogAPI'))
 
 app.listen(config.PORT, ()=>{
     console.log('start server')})

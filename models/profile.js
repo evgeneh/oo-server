@@ -14,7 +14,8 @@ const profileSchema = new Schema({
     aboutMe: String,
     contacts: {github: String, website: String, linkedin: String, twitter: String},
     photos: {small: String, large: String},
-    following: [Number]
+    following: [Number],
+    dialogs: [{type: Schema.Types.ObjectId, ref: 'profile'}]
 },  {timestamps: true})
 
 const Profile = mongoose.model("profile", profileSchema)

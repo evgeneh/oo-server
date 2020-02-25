@@ -5,8 +5,9 @@ const mongoose = require('mongoose')
 
 const Wall = require('../models/wall')
 const WallPostSchema = require('../models/wallpost')
-
 const Profile = require('../models/profile')
+
+const utils = require('../utils/item-methods')
 
 const CreateNewWall = async (id) => {
     const profile = await Profile.findOne({id: id}).exec();
@@ -22,10 +23,6 @@ const CreateNewWall = async (id) => {
     return
 }
 
-//convert full profile to some props needed for post data
-const profileToPostOwner = ({id, photos, fullName}) => {
-    return {userId: id, photo: photos.small, fullName}
-}
 
 const addNewWallPost = async (myId, userId, text) => {
     //get mongo _id for post creator
@@ -40,7 +37,7 @@ const addNewWallPost = async (myId, userId, text) => {
     post = await post.save()
     await  Wall.findOneAndUpdate({userId: userId}, {$push: {posts: { $each: [post._id], $position: 0 }}}, {new: true})
 
-    let postRes = {postId: post._id, text: post.text, date: post.createdAt, owner: profileToPostOwner(profile)}
+    let postRes = {postId: post._id, text: post.text, date: post.createdAt, owner: utils.profileToItemOwner(profile)}
 
     return postRes;
 }
@@ -64,7 +61,7 @@ router.get("/wall", async (req, res) => {
                 postId: single._id,
                 date: single.updatedAt,
                 text: single.text,
-                owner: profileToPostOwner(single.owner)
+                owner: utils.profileToItemOwner(single.owner)
             }
         })
 
