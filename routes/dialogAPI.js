@@ -100,4 +100,36 @@ router.put("/dialog", async (req, res) => { //load dialog with user
     }
 })
 
+router.get("/dialogs", async (req, res) => { //load dialog with user
+    if (req.session.userId === undefined)
+        return res.json({message: 'Not authorized'});
+    try {
+        let userProfile = await Profile.findOne({id: req.session.userId}).populate([{
+            path: 'dialogs',
+            model: 'dialog'
+        }]).exec();
+
+        if (userProfile.dialogs === undefined || !userProfile.dialogs) {
+            res.send({resultCode: 0, data: {totalCount: 0, dialogs: []}})
+        }
+        else {
+            let dialogs = await Promise.all(userProfile.dialogs.map(async (dialog) => {
+                let index = dialog.owners.findIndex((value) => value !== req.session.userId)
+                const interlocutorId = dialog.owners[index]
+
+                let profile = await Profile.findOne({id: interlocutorId}).exec()
+                let {date, ...lastMessage} = dialog.messages[0]._doc
+                return {date, lastMessage, user: utils.profileToItemOwner(profile)}
+            }))
+
+            res.send({resultCode: 0, data: {totalCount: dialogs.length, dialogs}})
+        }
+    }
+    catch (e) {
+        console.log('Get dialogs error: ' + e)
+        res.send({resultCode: 1})
+    }
+
+})
+
 module.exports = router
