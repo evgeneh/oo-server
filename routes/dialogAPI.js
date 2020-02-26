@@ -29,11 +29,10 @@ const CreateNewDialog = async (myId, userId)=> {
 }
 //-------------
 
-const setAllMessagesAsRead = async (_id, myId) => {
-    //const newMessages = messages.map((mes)=>{
-    //    if (mes.ownerId === myId)
-    //})
-    await Dialog.updateOne({_id: _id}, {'messages.$ownerId': {$ne: myId}}, {$set: {'messages.$[].isRead': true}})
+const setAllMessagesAsRead = async (_id, notMyId) => {
+
+    await Dialog.updateOne({'messages.ownerId':  notMyId, '_id': _id }, {$set: {'messages.$[].isRead': true}}).exec()
+
 }
 
 
@@ -41,9 +40,13 @@ router.post("/dialog/message", async (req, res) => {
      if (req.session.userId === undefined)
         return res.json({message: 'Not authorized'});
     let myId = req.session.userId
-    let {userId, text, date, dialogId} = req.body //id message receiver
-
+    let {userId, text, date} = req.body //id message receiver
     try {
+
+        const myDialogWithId = await Dialog.findOne({owners: {$all : [userId, myId]}}).exec()
+
+        let dialogId =  (myDialogWithId) ? myDialogWithId._id : null;
+
         if (!dialogId) //for first message to thisUser
         {
             dialogId = await CreateNewDialog(myId, userId)
@@ -62,10 +65,11 @@ router.post("/dialog/message", async (req, res) => {
     }
 })
 
+
 router.put("/dialog", async (req, res) => { //load dialog with user
     if (req.session.userId === undefined)
        return res.json({message: 'Not authorized'});
-    let myId = 1//req.session.userId
+    let myId = req.session.userId
     let userProfile = await Profile.findOne({id: req.query.id}).populate([{path: 'dialogs', model: 'dialog'}]).exec();
     let findDialog = null;
 
@@ -73,24 +77,25 @@ router.put("/dialog", async (req, res) => { //load dialog with user
                 owner: utils.profileToItemOwner(userProfile)}
                 //watch all user dialogs to find dialog with my ID
     userProfile.dialogs.forEach((dialog) => {
-        if (dialog.owners.includes(myId))
+        if (dialog.owners.includes(myId) && dialog.owners.includes(req.query.id))
             findDialog = dialog
     } )
 
     //in case of dialog with this user is exists
     if (findDialog ) {
         //set not mine messages in this dialog as read!
-        await setAllMessagesAsRead(findDialog._id, myId)
+        await setAllMessagesAsRead(findDialog._id, req.query.id)
 
         res.send({resultCode: 0, data: {
                 currentDialogId: findDialog._id,
-                owner: utils.profileToItemOwner(userProfile),
+                owner: data.owner,
                 messages: findDialog.messages,
                 totalMessagesCount: findDialog.messages.length
             }})
         //data
     }
     else {
+        //send this if dialog is not started
         res.send({resultCode: 0, data})
     }
 })
