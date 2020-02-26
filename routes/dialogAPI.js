@@ -12,6 +12,7 @@ const CreateNewDialog = async (myId, userId)=> {
     const userProfile = await Profile.findOne({id: userId}).exec();
     const myProfile = await Profile.findOne({id: myId}).exec();
     if (! userProfile || ! myProfile ) return null
+
     let dialog = new Dialog({
         _id: new mongoose.Types.ObjectId(),
         owners: [myId, userId],
@@ -26,11 +27,20 @@ const CreateNewDialog = async (myId, userId)=> {
 
     return dialog._id
 }
+//-------------
+
+const setAllMessagesAsRead = async (_id, myId) => {
+    //const newMessages = messages.map((mes)=>{
+    //    if (mes.ownerId === myId)
+    //})
+    await Dialog.updateOne({_id: _id}, {'messages.$ownerId': {$ne: myId}}, {$set: {'messages.$[].isRead': true}})
+}
+
 
 router.post("/dialog/message", async (req, res) => {
-    // if (req.session.userId === undefined)
-    //     return res.json({message: 'Not authorized'});
-    let myId = 1//req.session.userId
+     if (req.session.userId === undefined)
+        return res.json({message: 'Not authorized'});
+    let myId = req.session.userId
     let {userId, text, date, dialogId} = req.body //id message receiver
 
     try {
@@ -53,8 +63,8 @@ router.post("/dialog/message", async (req, res) => {
 })
 
 router.put("/dialog", async (req, res) => { //load dialog with user
-   // if (req.session.userId === undefined)
-   //     return res.json({message: 'Not authorized'});
+    if (req.session.userId === undefined)
+       return res.json({message: 'Not authorized'});
     let myId = 1//req.session.userId
     let userProfile = await Profile.findOne({id: req.query.id}).populate([{path: 'dialogs', model: 'dialog'}]).exec();
     let findDialog = null;
@@ -69,6 +79,9 @@ router.put("/dialog", async (req, res) => { //load dialog with user
 
     //in case of dialog with this user is exists
     if (findDialog ) {
+        //set not mine messages in this dialog as read!
+        await setAllMessagesAsRead(findDialog._id, myId)
+
         res.send({resultCode: 0, data: {
                 currentDialogId: findDialog._id,
                 owner: utils.profileToItemOwner(userProfile),
