@@ -159,11 +159,21 @@ router.get("/dialogs", async (req, res) => { //load dialog with user
 })
 
 
-router.get("/dialogs/unread", async (req, res) => { //get unreaded messages
+router.get("/dialogs/unread", async (req, res) => { //get unread messages count
     if (req.session.userId === undefined)
         return res.json({message: 'Not authorized'});
     try {
         let userProfile = await getUserProfileWithDialogs(req.session.userId)
+
+        let unreadCount = 0;
+        userProfile.dialogs.forEach( (dialog) => {
+            dialog.messages.forEach((message) => {
+
+                if ( ! (message.isRead || message.ownerId === req.session.userId))
+                    unreadCount++;
+            })
+        })
+        res.send({resultCode: 0, messagesCount: unreadCount})
     }
     catch (e) {
             console.log('Get unread count error: ' + e)
