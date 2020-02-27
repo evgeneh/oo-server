@@ -9,20 +9,25 @@ const Profile = require('../models/profile')
 const utils = require('../utils/item-methods')
 
 const CreateNewDialog = async (myId, userId)=> {
-    const userProfile = await Profile.findOne({id: userId}).exec();
+    let userProfile
+    if (myId !== userId) {    //skip this block in case of self messaging
+        userProfile = await Profile.findOne({id: userId}).exec();
+        if (! userProfile ) return null
+    }
     const myProfile = await Profile.findOne({id: myId}).exec();
-    if (! userProfile || ! myProfile ) return null
+    if (! myProfile ) return null
 
     let dialog = new Dialog({
         _id: new mongoose.Types.ObjectId(),
-        owners: [myId, userId],
+        owners: [myId, 0],
         messages: []
     })
 
     dialog = await dialog.save()
 
     //add new dialog _id in begin of both users array
-    await  Profile.findOneAndUpdate({_id: userProfile._id}, {$push: {dialogs: { $each: [dialog._id], $position: 0 }}} )
+    if (myId !== userId)
+        await  Profile.findOneAndUpdate({_id: userProfile._id}, {$push: {dialogs: { $each: [dialog._id], $position: 0 }}} )
     await  Profile.findOneAndUpdate({_id: myProfile._id}, {$push: {dialogs: { $each: [dialog._id], $position: 0 }}} )
 
     return dialog._id
@@ -35,6 +40,13 @@ const setAllMessagesAsRead = async (_id, notMyId) => {
 
 }
 
+const getUserProfileWithDialogs = async (userId) => {
+    return  await Profile.findOne({id: userId}).populate([{
+        path: 'dialogs',
+        model: 'dialog'
+    }]).exec();
+}
+
 
 router.post("/dialog/message", async (req, res) => {
      if (req.session.userId === undefined)
@@ -42,11 +54,10 @@ router.post("/dialog/message", async (req, res) => {
     let myId = req.session.userId
     let {userId, text, date} = req.body //id message receiver
     try {
-
-        const myDialogWithId = await Dialog.findOne({owners: {$all : [userId, myId]}}).exec()
+        let secondId = (userId === myId) ? 0 : userId //for self messaging!
+        const myDialogWithId = await Dialog.findOne({owners: {$all : [secondId, myId]}}).exec()
 
         let dialogId =  (myDialogWithId) ? myDialogWithId._id : null;
-
         if (!dialogId) //for first message to thisUser
         {
             dialogId = await CreateNewDialog(myId, userId)
@@ -70,15 +81,26 @@ router.put("/dialog", async (req, res) => { //load dialog with user
     if (req.session.userId === undefined)
        return res.json({message: 'Not authorized'});
     let myId = req.session.userId
-    let userProfile = await Profile.findOne({id: req.query.id}).populate([{path: 'dialogs', model: 'dialog'}]).exec();
+
+    let userProfile = await getUserProfileWithDialogs(req.query.id)
+    if (!userProfile) {
+        return res.json({message: 'Wrong request id'})
+    }
+
     let findDialog = null;
 
     let data = {currentDialogId: null, totalMessagesCount: 0, messages: [],
                 owner: utils.profileToItemOwner(userProfile)}
-                //watch all user dialogs to find dialog with my ID
+
+    //is for self-messaging case
+    let interlocutorId = (myId === parseInt(req.query.id) ) ? 0 :  parseInt(req.query.id)
+
+    //watch all user dialogs to find dialog with my ID
     userProfile.dialogs.forEach((dialog) => {
-        if (dialog.owners.includes(myId) && dialog.owners.includes(req.query.id))
-            findDialog = dialog
+        if (dialog.owners.includes(myId) && dialog.owners.includes(interlocutorId))
+        {
+                findDialog = dialog
+        }
     } )
 
     //in case of dialog with this user is exists
@@ -100,26 +122,30 @@ router.put("/dialog", async (req, res) => { //load dialog with user
     }
 })
 
+
 router.get("/dialogs", async (req, res) => { //load dialog with user
     if (req.session.userId === undefined)
         return res.json({message: 'Not authorized'});
     try {
-        let userProfile = await Profile.findOne({id: req.session.userId}).populate([{
-            path: 'dialogs',
-            model: 'dialog'
-        }]).exec();
+        let userProfile = await getUserProfileWithDialogs(req.session.userId)
 
         if (userProfile.dialogs === undefined || !userProfile.dialogs) {
             res.send({resultCode: 0, data: {totalCount: 0, dialogs: []}})
         }
         else {
             let dialogs = await Promise.all(userProfile.dialogs.map(async (dialog) => {
+
                 let index = dialog.owners.findIndex((value) => value !== req.session.userId)
-                const interlocutorId = dialog.owners[index]
+
+                let interlocutorId = dialog.owners[index]
+
+                if (interlocutorId === 0) interlocutorId = req.session.userId
 
                 let profile = await Profile.findOne({id: interlocutorId}).exec()
                 let {date, ...lastMessage} = dialog.messages[0]._doc
+
                 return {date, lastMessage, user: utils.profileToItemOwner(profile)}
+
             }))
 
             res.send({resultCode: 0, data: {totalCount: dialogs.length, dialogs}})
@@ -129,6 +155,20 @@ router.get("/dialogs", async (req, res) => { //load dialog with user
         console.log('Get dialogs error: ' + e)
         res.send({resultCode: 1})
     }
+
+})
+
+
+router.get("/dialogs/unread", async (req, res) => { //get unreaded messages
+    if (req.session.userId === undefined)
+        return res.json({message: 'Not authorized'});
+    try {
+        let userProfile = await getUserProfileWithDialogs(req.session.userId)
+    }
+    catch (e) {
+            console.log('Get unread count error: ' + e)
+            res.send({resultCode: 1})
+        }
 
 })
 
