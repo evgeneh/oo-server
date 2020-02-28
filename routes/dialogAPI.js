@@ -10,7 +10,9 @@ const utils = require('../utils/item-methods')
 
 const CreateNewDialog = async (myId, userId)=> {
     let userProfile
-    if (myId !== userId) {    //skip this block in case of self messaging
+
+    let isSelfMessaging = (myId === parseInt(userId))
+    if (! isSelfMessaging) {    //skip this block in case of self messaging
         userProfile = await Profile.findOne({id: userId}).exec();
         if (! userProfile ) return null
     }
@@ -19,14 +21,14 @@ const CreateNewDialog = async (myId, userId)=> {
 
     let dialog = new Dialog({
         _id: new mongoose.Types.ObjectId(),
-        owners: [myId, 0],
+        owners: [myId, (isSelfMessaging) ? 0 : userId],
         messages: []
     })
 
     dialog = await dialog.save()
 
     //add new dialog _id in begin of both users array
-    if (myId !== userId)
+    if (! isSelfMessaging)
         await  Profile.findOneAndUpdate({_id: userProfile._id}, {$push: {dialogs: { $each: [dialog._id], $position: 0 }}} )
     await  Profile.findOneAndUpdate({_id: myProfile._id}, {$push: {dialogs: { $each: [dialog._id], $position: 0 }}} )
 
@@ -55,11 +57,15 @@ router.post("/dialog/message", async (req, res) => {
     let {userId, text, date} = req.body //id message receiver
     try {
         let secondId = (userId === myId) ? 0 : userId //for self messaging!
+
         const myDialogWithId = await Dialog.findOne({owners: {$all : [secondId, myId]}}).exec()
+
+
 
         let dialogId =  (myDialogWithId) ? myDialogWithId._id : null;
         if (!dialogId) //for first message to thisUser
         {
+
             dialogId = await CreateNewDialog(myId, userId)
             if (!dialogId) return res.json({message: 'createDialogError'});
         }
@@ -94,6 +100,8 @@ router.put("/dialog", async (req, res) => { //load dialog with user
 
     //is for self-messaging case
     let interlocutorId = (myId === parseInt(req.query.id) ) ? 0 :  parseInt(req.query.id)
+
+
 
     //watch all user dialogs to find dialog with my ID
     userProfile.dialogs.forEach((dialog) => {
